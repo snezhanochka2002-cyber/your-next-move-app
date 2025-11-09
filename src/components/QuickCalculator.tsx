@@ -13,93 +13,107 @@ import {
 import { ArrowRight } from "lucide-react";
 
 const QuickCalculator = () => {
-  const [apartmentType, setApartmentType] = useState("");
-  const [floor, setFloor] = useState("");
-  const [elevator, setElevator] = useState("");
+  const [floorFrom, setFloorFrom] = useState("");
+  const [floorTo, setFloorTo] = useState("");
+  const [elevatorFrom, setElevatorFrom] = useState("");
+  const [elevatorTo, setElevatorTo] = useState("");
   const [furnitureAmount, setFurnitureAmount] = useState("");
   const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
 
   const calculatePrice = () => {
-    let basePrice = 3000;
-
-    // Apartment type multiplier
-    if (apartmentType === "1room") basePrice += 0;
-    else if (apartmentType === "2room") basePrice += 2000;
-    else if (apartmentType === "3room") basePrice += 4000;
-    else if (apartmentType === "4room") basePrice += 6000;
-    else if (apartmentType === "office") basePrice += 8000;
-    else if (apartmentType === "house") basePrice += 10000;
-
-    // Floor multiplier (no elevator)
-    if (elevator === "no") {
-      const floorNum = parseInt(floor);
-      if (floorNum > 2) {
-        basePrice += (floorNum - 2) * 500;
-      }
-    }
+    let basePrice = 2500;
 
     // Furniture amount
-    if (furnitureAmount === "small") basePrice += 1000;
-    else if (furnitureAmount === "medium") basePrice += 3000;
-    else if (furnitureAmount === "large") basePrice += 5000;
+    if (furnitureAmount === "small") basePrice += 1500;
+    else if (furnitureAmount === "medium") basePrice += 3500;
+    else if (furnitureAmount === "large") basePrice += 6000;
+
+    // Floor from (откуда)
+    if (floorFrom === "3plus" && elevatorFrom === "no") {
+      basePrice += 400 * 2; // За 2 дополнительных этажа минимум (4-й и выше)
+    }
+
+    // Floor to (куда)
+    if (floorTo === "3plus" && elevatorTo === "no") {
+      basePrice += 400 * 2; // За 2 дополнительных этажа минимум (4-й и выше)
+    }
 
     setEstimatedPrice(basePrice);
   };
 
-  const isFormValid =
-    apartmentType && floor && elevator && furnitureAmount;
+  const isFormValid = floorFrom && floorTo && furnitureAmount &&
+    (floorFrom !== "3plus" || elevatorFrom) &&
+    (floorTo !== "3plus" || elevatorTo);
 
   return (
     <Card className="shadow-lg">
       <CardContent className="p-6 space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="apartmentType">Тип жилья</Label>
-          <Select value={apartmentType} onValueChange={setApartmentType}>
-            <SelectTrigger id="apartmentType">
-              <SelectValue placeholder="Выберите тип" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1room">1-комнатная квартира</SelectItem>
-              <SelectItem value="2room">2-комнатная квартира</SelectItem>
-              <SelectItem value="3room">3-комнатная квартира</SelectItem>
-              <SelectItem value="4room">4+ комнатная квартира</SelectItem>
-              <SelectItem value="office">Офис</SelectItem>
-              <SelectItem value="house">Загородный дом</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="floor">Этаж</Label>
-          <Select value={floor} onValueChange={setFloor}>
-            <SelectTrigger id="floor">
+          <Label htmlFor="floorFrom">Этаж откуда</Label>
+          <Select value={floorFrom} onValueChange={(value) => {
+            setFloorFrom(value);
+            if (value !== "3plus") setElevatorFrom("");
+          }}>
+            <SelectTrigger id="floorFrom">
               <SelectValue placeholder="Выберите этаж" />
             </SelectTrigger>
             <SelectContent>
-              {[...Array(20)].map((_, i) => (
-                <SelectItem key={i + 1} value={String(i + 1)}>
-                  {i + 1} этаж
-                </SelectItem>
-              ))}
+              <SelectItem value="1">1 этаж</SelectItem>
+              <SelectItem value="2">2 этаж</SelectItem>
+              <SelectItem value="3plus">3 и выше</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
+        {floorFrom === "3plus" && (
+          <div className="space-y-2">
+            <Label htmlFor="elevatorFrom">Лифт (откуда)</Label>
+            <Select value={elevatorFrom} onValueChange={setElevatorFrom}>
+              <SelectTrigger id="elevatorFrom">
+                <SelectValue placeholder="Наличие лифта" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="yes">Есть</SelectItem>
+                <SelectItem value="no">Нет</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         <div className="space-y-2">
-          <Label htmlFor="elevator">Лифт</Label>
-          <Select value={elevator} onValueChange={setElevator}>
-            <SelectTrigger id="elevator">
-              <SelectValue placeholder="Наличие лифта" />
+          <Label htmlFor="floorTo">Этаж куда</Label>
+          <Select value={floorTo} onValueChange={(value) => {
+            setFloorTo(value);
+            if (value !== "3plus") setElevatorTo("");
+          }}>
+            <SelectTrigger id="floorTo">
+              <SelectValue placeholder="Выберите этаж" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="yes">Есть</SelectItem>
-              <SelectItem value="no">Нет</SelectItem>
+              <SelectItem value="1">1 этаж</SelectItem>
+              <SelectItem value="2">2 этаж</SelectItem>
+              <SelectItem value="3plus">3 и выше</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
+        {floorTo === "3plus" && (
+          <div className="space-y-2">
+            <Label htmlFor="elevatorTo">Лифт (куда)</Label>
+            <Select value={elevatorTo} onValueChange={setElevatorTo}>
+              <SelectTrigger id="elevatorTo">
+                <SelectValue placeholder="Наличие лифта" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="yes">Есть</SelectItem>
+                <SelectItem value="no">Нет</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         <div className="space-y-2">
-          <Label htmlFor="furniture">Количество мебели</Label>
+          <Label htmlFor="furniture">Объем мебели</Label>
           <Select value={furnitureAmount} onValueChange={setFurnitureAmount}>
             <SelectTrigger id="furniture">
               <SelectValue placeholder="Оцените объём" />
